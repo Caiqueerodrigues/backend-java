@@ -28,7 +28,7 @@ public class PedidosController {
     @Autowired
     private PedidosRepository repository;
 
-    @PostMapping
+    @PostMapping("/caixa-listagem")
     public ResponseEntity<ResponseDTO> getPedidosMenu(@RequestBody @Valid DateDTO date) {
         try {
             var pedidosRespository = repository.findByTodosPedidos(date.data());
