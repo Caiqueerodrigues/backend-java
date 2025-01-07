@@ -1,5 +1,8 @@
 package webb_lanches.webb_lanches.Pedidos;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -13,6 +16,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import webb_lanches.webb_lanches.Pedidos.DTO.CadastrarPedidoDTO;
+import webb_lanches.webb_lanches.Pedidos.DTO.ItemsCaixaDTO;
 import webb_lanches.webb_lanches.Pedidos.Enums.TiposRetirada;
 
 @Table(name = "pedidos")
@@ -29,6 +33,7 @@ public class Pedido {
     private Long id;
 
     private String idPedido;
+    private String nomeproduto;
     private String obs;
     private Double preco;
     private int quantidade;
@@ -39,8 +44,7 @@ public class Pedido {
     private Long idProduto;
     private String idAdicional;
     
-    @Enumerated(EnumType.STRING)
-    private TiposRetirada retirada;
+    private String retirada;
 
     public Pedido(CadastrarPedidoDTO dados) {
         this.idPedido = dados.idPedido();

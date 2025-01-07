@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
-import webb_lanches.webb_lanches.Caixa.DTO.GetPagamentos;
 import webb_lanches.webb_lanches.Caixa.DTO.ListagemPagamentos;
+import webb_lanches.webb_lanches.Commons.DTO.DateDTO;
 import webb_lanches.webb_lanches.Commons.DTO.ResponseDTO;
 import webb_lanches.webb_lanches.Pedidos.PedidosRepository;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,7 +32,7 @@ public class CaixaController {
     private PedidosRepository pedidosRepository;
 
     @PostMapping
-    public ResponseEntity<ResponseDTO> getPagamentos(@RequestBody @Valid GetPagamentos data) {
+    public ResponseEntity<ResponseDTO> getPagamentos(@RequestBody @Valid DateDTO data) {
         try {
             var payments = pedidosRepository.findByIdPedidoContaining(data.data());
 
