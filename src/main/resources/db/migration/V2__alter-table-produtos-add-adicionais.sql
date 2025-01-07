@@ -1,0 +1,1 @@
+ALTER TABLE produtos ADD COLUMN adicional VARCHAR(1) NOT NULL;

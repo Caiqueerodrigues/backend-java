@@ -19,7 +19,9 @@ public record CadastrarProduto(
     Double precoProduto,
 
     @NotBlank
-    String categoria
+    String categoria,
+
+    String adicional
 ) {
 
 }

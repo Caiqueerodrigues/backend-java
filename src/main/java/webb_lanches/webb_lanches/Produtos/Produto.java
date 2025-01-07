@@ -32,6 +32,7 @@ public class Produto {
     private Double precoProduto;
     private int qtdProduto;
     private String categoria;
+    private String adicional;
 
     public Produto(CadastrarProduto dados) {
         this.nomeProduto = dados.nomeProduto();
@@ -40,6 +41,7 @@ public class Produto {
         this.precoProduto = dados.precoProduto();
         this.qtdProduto = dados.qtdProduto();
         this.categoria = dados.categoria();
+        this.adicional = dados.adicional();
     }
 
     public void alterarProduto(AlterarProduto dados) {
@@ -49,5 +51,6 @@ public class Produto {
         this.precoProduto = dados.precoProduto();
         this.qtdProduto = dados.qtdProduto();
         this.categoria = dados.categoria();
+        this.adicional = dados.adicional();
     }
 }

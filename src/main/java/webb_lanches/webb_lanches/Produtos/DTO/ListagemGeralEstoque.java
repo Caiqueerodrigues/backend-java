@@ -3,27 +3,14 @@ package webb_lanches.webb_lanches.Produtos.DTO;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-public record AlterarProduto(
-
-    @NotNull
-    Long id,
-
-    @NotBlank
+public record ListagemGeralEstoque(
+    Long idProduto,
     String nomeProduto,
-
     String descricao,
-
-    Boolean ativo,
-
-    @NotNull
     int qtdProduto,
-
-    @NotNull
+    int ativo,
     Double precoProduto,
-
-    @NotBlank
     String categoria,
-
     String adicional
 ) {
 

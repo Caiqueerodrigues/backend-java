@@ -1,6 +1,10 @@
 package webb_lanches.webb_lanches.Controllers;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -14,6 +18,7 @@ import webb_lanches.webb_lanches.Produtos.Produto;
 import webb_lanches.webb_lanches.Produtos.ProdutosRepository;
 import webb_lanches.webb_lanches.Produtos.DTO.AlterarProduto;
 import webb_lanches.webb_lanches.Produtos.DTO.CadastrarProduto;
+import webb_lanches.webb_lanches.Produtos.DTO.ListagemGeralEstoque;
 import webb_lanches.webb_lanches.Produtos.ENUM.TipoProduto;
 
 import org.springframework.web.bind.annotation.PostMapping;
@@ -69,7 +74,7 @@ public class ProdutosController {
                 }
             }
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(new ResponseDTO("", "Desculpe, tente novamente mais tarde", "",""));
+            return ResponseEntity.status(500).body(new ResponseDTO("", "Desculpe, tente novamente mais tarde!", "",""));
         }
         
     }
@@ -124,4 +129,42 @@ public class ProdutosController {
             return ResponseEntity.status(500).body(new ResponseDTO("", "Desculpe, tente novamente mais tarde!", "", ""));
         }
     }
+
+    @GetMapping()
+    public ResponseEntity<ResponseDTO> getAllProdutos() {
+        try {
+            List<ListagemGeralEstoque> response = new ArrayList<>();
+            
+            var items = produtoRepository.findAll(Sort.by(Sort.Order.asc("nomeProduto")));
+            var adicionais = adicionalRepository.findAll(Sort.by(Sort.Order.asc("nome")));
+            
+            items.forEach((item) -> response.add(new ListagemGeralEstoque(
+                item.getIdProduto(), 
+                item.getNomeProduto(), 
+                item.getDescricao(), 
+                item.getQtdProduto(), 
+                (item.getAtivo()) ? 1 : 0, 
+                item.getPrecoProduto(), 
+                item.getCategoria(), 
+                item.getAdicional()
+                )));
+                
+                adicionais.forEach((item) -> response.add(new ListagemGeralEstoque(
+                    item.getIdAdicional(), 
+                    item.getNome(), 
+                    "", 
+                    0, 
+                    (item.getStatus()) ? 1 : 0, 
+                    item.getPreco(), 
+                    "Adicionais", 
+                    ""
+                )));
+
+                return ResponseEntity.status(200).body(new ResponseDTO(response, "", "", ""));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(new ResponseDTO("", "Desculpe, tente novamente mais tarde!", "", ""));
+        }
+        
+    }
+    
 }
