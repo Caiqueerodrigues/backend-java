@@ -1,9 +1,12 @@
 package webb_lanches.webb_lanches.Controllers;
 
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
@@ -43,17 +46,26 @@ public class CaixaController {
                         .filter(item -> item.getTipoPagamento().equals(tipoPagamento))
                         .findFirst();
 
+                    DecimalFormatSymbols simbolos = new DecimalFormatSymbols(new Locale("pt", "BR"));
+                    simbolos.setDecimalSeparator(',');
+                    simbolos.setGroupingSeparator('.'); // Usar ponto como separador de milhar
+
+                    DecimalFormat df = new DecimalFormat("#,##0.00", simbolos);
+                    String totalFormatado = df.format(day.getTotal());
+
                 if (existeOpt.isEmpty()) {
-                    var novoPagamento = new ListagemPagamentos(tipoPagamento, day.getTotal().toString());
+                    var novoPagamento = new ListagemPagamentos(tipoPagamento, totalFormatado);
 
                     pagamentos.add(novoPagamento);
                 } else {
                     ListagemPagamentos existe = existeOpt.get();
-                    
-                    double novoValor = Double.parseDouble(existe.getValorPagamento()) + day.getTotal();
+
+                    double novoValor = Double.parseDouble(existe.getValorPagamento().replace(",", ".")) + day.getTotal();
+                    String novoValorFormatado = df.format(novoValor);
+
                     ListagemPagamentos novoPagamento = new ListagemPagamentos(
                         existe.getTipoPagamento(), 
-                        String.valueOf(novoValor)
+                        novoValorFormatado
                     );
                     
                     pagamentos.remove(existe);
