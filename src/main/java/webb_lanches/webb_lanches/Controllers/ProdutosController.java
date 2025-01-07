@@ -46,7 +46,7 @@ public class ProdutosController {
     public ResponseEntity<ResponseDTO> criarProduto(@RequestBody @Valid CadastrarProduto dados) {
 
         try {
-            if (dados.categoria().equalsIgnoreCase("Adcionais") || dados.categoria().equalsIgnoreCase("Adicional")) {
+            if (dados.categoria().equalsIgnoreCase("Adicionais") || dados.categoria().equalsIgnoreCase("Adicional")) {
                 var exists = adicionalRepository.findByNome(dados.nomeProduto());
             
                 if (exists == null) {

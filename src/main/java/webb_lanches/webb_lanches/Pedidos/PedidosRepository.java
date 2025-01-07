@@ -15,4 +15,7 @@ public interface PedidosRepository extends JpaRepository<Pedido, Long> {
     @Query(nativeQuery = true, value = "CALL todosPedidos(:data)")
     List<Pedido> findByTodosPedidos(String data);
 
+    @Query(nativeQuery = true, value = "CALL pedidosFiltro('Fiado')")
+    List<Pedido> findByPedidosFiltro();
+
 }

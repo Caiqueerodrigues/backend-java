@@ -34,6 +34,7 @@ BEGIN
         pedidos.quantidade, 
         pedidos.id_Adicional, 
         pedidos.status, 
+        pedidos.retirada,
         pedidos.pago, 
         pedidos.id_Produto ,
         produtos.nome_Produto AS nomeProduto 
