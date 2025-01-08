@@ -17,9 +17,9 @@ import webb_lanches.webb_lanches.Produtos.Adicional;
 import webb_lanches.webb_lanches.Produtos.Produto;
 import webb_lanches.webb_lanches.Produtos.ProdutosRepository;
 import webb_lanches.webb_lanches.Pedidos.DTO.CriarPedidoDTO;
-import webb_lanches.webb_lanches.Pedidos.DTO.DadosEdicaoPedido;
+import webb_lanches.webb_lanches.Pedidos.DTO.DadosListagemPedidoId;
 import webb_lanches.webb_lanches.Pedidos.DTO.DeletarPedidotDTO;
-import webb_lanches.webb_lanches.Pedidos.DTO.ItemsEdicaoPedido;
+import webb_lanches.webb_lanches.Pedidos.DTO.ItemsListagemPedidoId;
 import webb_lanches.webb_lanches.Pedidos.DTO.ItemsPedidoDTO;
 import webb_lanches.webb_lanches.Pedidos.DTO.ItemsPedidoNovoDTO;
 import webb_lanches.webb_lanches.Pedidos.DTO.ListagemPedidosCaixa;
@@ -38,6 +38,8 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PutMapping;
+
 
 
 
@@ -163,9 +165,9 @@ public class PedidosController {
                 var nomeCliente = (pedido.get(0).getIdPedido().contains(".")) ? 
                     pedido.get(0).getIdPedido().split("\\.")[0] : "";
 
-                List<ItemsEdicaoPedido> items = new ArrayList<>();
+                List<ItemsListagemPedidoId> items = new ArrayList<>();
 
-                DadosEdicaoPedido response = new DadosEdicaoPedido(
+                DadosListagemPedidoId response = new DadosListagemPedidoId(
                     id, 
                     pedido.get(0).getRetirada(),
                     pedido.get(0).getPago(), 
@@ -196,7 +198,7 @@ public class PedidosController {
 
                     Produto produtoRepos = produtosRepository.findByIdProduto(item.getIdProduto());
 
-                    ItemsEdicaoPedido produto = new ItemsEdicaoPedido(
+                    ItemsListagemPedidoId produto = new ItemsListagemPedidoId(
                         item.getObs(), 
                         item.getPreco(), 
                         item.getQuantidade(), 
@@ -223,6 +225,14 @@ public class PedidosController {
         }
     }
 
+    @PutMapping("/alterar-pedido")
+    public ResponseEntity<ResponseDTO> putPedido( @RequestBody @Valid DadosListagemPedidoId dados) {
+        try {
+            return ResponseEntity.status(200).body(new ResponseDTO("", "", "",""));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(new ResponseDTO(e.getMessage(), "Desculpe, tente novamente mais tarde!", "",""));
+        }
+    }
     @DeleteMapping("/apagar-pedido")
     @Transactional
     public ResponseEntity<ResponseDTO> apagarPedido(@RequestBody @Valid DeletarPedidotDTO data) {

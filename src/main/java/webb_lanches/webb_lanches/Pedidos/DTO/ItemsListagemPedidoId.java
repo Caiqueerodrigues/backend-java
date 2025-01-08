@@ -2,7 +2,7 @@ package webb_lanches.webb_lanches.Pedidos.DTO;
 
 import java.util.List;
 
-public record ItemsEdicaoPedido(
+public record ItemsListagemPedidoId(
     
     String obs,
     double preco,
