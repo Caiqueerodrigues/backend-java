@@ -35,7 +35,7 @@ public class Pedido {
     private String obs;
 
     @Transient
-    private String nomeproduto;
+    private String nomeProduto;
     
     private Double preco;
     private int quantidade;

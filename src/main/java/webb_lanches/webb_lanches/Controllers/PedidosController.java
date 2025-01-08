@@ -13,13 +13,20 @@ import webb_lanches.webb_lanches.Commons.Services.ObterDataHoraBrasilia;
 import webb_lanches.webb_lanches.Pedidos.Pedido;
 import webb_lanches.webb_lanches.Pedidos.PedidosRepository;
 import webb_lanches.webb_lanches.Pedidos.DTO.PedidoDTO;
+import webb_lanches.webb_lanches.Produtos.Adicional;
+import webb_lanches.webb_lanches.Produtos.Produto;
+import webb_lanches.webb_lanches.Produtos.ProdutosRepository;
 import webb_lanches.webb_lanches.Pedidos.DTO.CriarPedidoDTO;
+import webb_lanches.webb_lanches.Pedidos.DTO.DadosEdicaoPedido;
 import webb_lanches.webb_lanches.Pedidos.DTO.DeletarPedidotDTO;
-import webb_lanches.webb_lanches.Pedidos.DTO.ItemsCaixaDTO;
+import webb_lanches.webb_lanches.Pedidos.DTO.ItemsEdicaoPedido;
+import webb_lanches.webb_lanches.Pedidos.DTO.ItemsPedidoDTO;
 import webb_lanches.webb_lanches.Pedidos.DTO.ItemsPedidoNovoDTO;
 import webb_lanches.webb_lanches.Pedidos.DTO.ListagemPedidosCaixa;
+import webb_lanches.webb_lanches.Produtos.AdicionaisRepository;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,6 +36,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 
@@ -39,6 +47,12 @@ public class PedidosController {
 
     @Autowired
     private PedidosRepository repository;
+
+    @Autowired
+    private ProdutosRepository produtosRepository;
+
+    @Autowired
+    private AdicionaisRepository adicionaisRepository;
 
     @Autowired
     private ObterDataHoraBrasilia dataHoraBrasilia;
@@ -61,10 +75,17 @@ public class PedidosController {
 
                     if (existeOpt.isEmpty()) {
                         String nome = (pedido.getIdPedido() != null) ? pedido.getIdPedido().split("\\.")[0] : "";
+                        Produto produtoRepos = produtosRepository.findByIdProduto(pedido.getIdProduto());
 
-                        ItemsCaixaDTO itemPedido = new ItemsCaixaDTO(pedido.getIdProduto(), pedido.getNomeproduto(), pedido.getPreco(), pedido.getQuantidade(), "");
+                        ItemsPedidoDTO itemPedido = new ItemsPedidoDTO(
+                            pedido.getIdProduto(), 
+                            produtoRepos.getNomeProduto(), 
+                            pedido.getPreco(), 
+                            pedido.getQuantidade(), 
+                            ""
+                        );
 
-                        List<ItemsCaixaDTO> items = new ArrayList();
+                        List<ItemsPedidoDTO> items = new ArrayList();
                         items.add(itemPedido);
 
                         var pedidoNovo = new ListagemPedidosCaixa(
@@ -80,7 +101,7 @@ public class PedidosController {
                         
                         pedidos.add(pedidoNovo);
                     } else {
-                        ItemsCaixaDTO itemPedido = new ItemsCaixaDTO(pedido.getIdProduto(), pedido.getNomeproduto(), pedido.getPreco(), pedido.getQuantidade(), "");
+                        ItemsPedidoDTO itemPedido = new ItemsPedidoDTO(pedido.getIdProduto(), pedido.getNomeProduto(), pedido.getPreco(), pedido.getQuantidade(), "");
 
                         existeOpt.get().getItems().add(itemPedido);
                     }
@@ -91,7 +112,7 @@ public class PedidosController {
 
             return ResponseEntity.status(500).body(new ResponseDTO("", "", "","Não existem pedidos para esta data ainda!"));
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(new ResponseDTO(e, "Desculpe, tente novamente mais tarde!", "",""));
+            return ResponseEntity.status(500).body(new ResponseDTO(e.getMessage(), "Desculpe, tente novamente mais tarde!", "",""));
         }
     }
 
@@ -103,30 +124,105 @@ public class PedidosController {
                 dados.nomeCliente() + "." + dataHoraBrasilia.dataHoraBrasilia() : 
                 dataHoraBrasilia.dataHoraBrasilia();
                 
-            dados.items().forEach((ItemsPedidoNovoDTO item) -> {
-                var novoPedido = new Pedido();
-                    novoPedido.setIdPedido(idPedido);
-                    novoPedido.setObs(item.obs());
-                    novoPedido.setPreco(item.preco());
-                    novoPedido.setQuantidade(1);
-                    novoPedido.setStatus("");
-                    novoPedido.setTotal(item.total());
-                    novoPedido.setPago(item.pago());
-                    novoPedido.setIdProduto(item.idProduto());
-                    novoPedido.setIdAdicional(item.idAdicional());
-                    novoPedido.setRetirada(item.retirada());
-
-                novoPedido.setIdPedido(idPedido);
-                repository.save(novoPedido);
-            });
+                for (ItemsPedidoNovoDTO item : dados.items()) {
+                    Produto consult = produtosRepository.findByIdProduto((Long) item.idProduto());
+                
+                    if (consult != null && consult.getQtdProduto() - 1 >= 0) {
+                        Pedido novoPedido = new Pedido();
+                            novoPedido.setIdPedido(idPedido);
+                            novoPedido.setObs(item.obs());
+                            novoPedido.setPreco(item.preco());
+                            novoPedido.setQuantidade(1);
+                            novoPedido.setStatus("");
+                            novoPedido.setTotal(item.total());
+                            novoPedido.setPago(item.pago());
+                            novoPedido.setIdProduto(item.idProduto());
+                            novoPedido.setIdAdicional(item.idAdicional());
+                            novoPedido.setRetirada(item.retirada());
+                
+                        repository.save(novoPedido);
+                    } else {
+                        ResponseEntity<ResponseDTO> response = ResponseEntity.status(400).body(new ResponseDTO("", "Quantidade de " + consult.getNomeProduto() + " insuficiente!", "", ""));
+                        return response; // Sai do método ao encontrar o erro
+                    }
+                }
             
 
             return ResponseEntity.status(200).body(new ResponseDTO("", "", "Pedido Criado com sucesso!",""));
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(new ResponseDTO(e, "Desculpe, tente novamente mais tarde!", "",""));
+            return ResponseEntity.status(500).body(new ResponseDTO(e.getMessage(), "Desculpe, tente novamente mais tarde!", "",""));
         }
     }
     
+    @GetMapping("/{id}")
+    public ResponseEntity<ResponseDTO> getPedidoId(@PathVariable String id) {
+        try {
+            var pedido = repository.findByPedidoId(id);
+
+            if(pedido != null) {
+                var nomeCliente = (pedido.get(0).getIdPedido().contains(".")) ? 
+                    pedido.get(0).getIdPedido().split("\\.")[0] : "";
+
+                List<ItemsEdicaoPedido> items = new ArrayList<>();
+
+                DadosEdicaoPedido response = new DadosEdicaoPedido(
+                    id, 
+                    pedido.get(0).getRetirada(),
+                    pedido.get(0).getPago(), 
+                    pedido.get(0).getTotal(),
+                    nomeCliente, 
+                    items
+                );
+
+                List<Adicional> adicionais = adicionaisRepository.findAll();
+                List<Long> idsPedidosAgrupados = new ArrayList<>();
+
+                pedido.forEach((item) -> {
+                    List<String> adicionaisItem = new ArrayList<>();
+
+                    if(item.getIdAdicional() != null && !item.getIdAdicional().isBlank()) {
+                        List<String> ids = Arrays.asList(item.getIdAdicional().split(", "));
+
+                        ids.forEach(idAdd -> {
+                            Long idLong = Long.parseLong(idAdd);
+                                adicionais.stream()
+                                    .filter(adicional -> adicional.getIdAdicional() == idLong)  // Filtrar pelo id
+                                    .findFirst()
+                                    .ifPresent(adicional -> adicionaisItem.add(adicional.getNome()));  // Adicionar o nome à lista
+                        });
+                    }
+
+                    idsPedidosAgrupados.add(item.getId());
+
+                    Produto produtoRepos = produtosRepository.findByIdProduto(item.getIdProduto());
+
+                    ItemsEdicaoPedido produto = new ItemsEdicaoPedido(
+                        item.getObs(), 
+                        item.getPreco(), 
+                        item.getQuantidade(), 
+                        item.getStatus(), 
+                        item.getTotal(), 
+                        item.getPago(), 
+                        item.getIdProduto(), 
+                        item.getIdAdicional(), 
+                        produtoRepos.getNomeProduto(), 
+                        item.getRetirada(), 
+                        idsPedidosAgrupados,
+                        adicionaisItem
+                    );
+
+                    items.add(produto);
+                });
+
+                return ResponseEntity.status(200).body(new ResponseDTO(response, "", "",""));
+            } else {
+                return ResponseEntity.status(400).body(new ResponseDTO("", "Desculpe, pedido inexistente!", "",""));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(new ResponseDTO(e.getMessage(), "Desculpe, tente novamente mais tarde!", "",""));
+        }
+    }
+
     @DeleteMapping("/apagar-pedido")
     @Transactional
     public ResponseEntity<ResponseDTO> apagarPedido(@RequestBody @Valid DeletarPedidotDTO data) {

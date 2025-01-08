@@ -6,7 +6,7 @@ public record ListagemPedidosCaixa(
     String nome,
     String idPedido,
     String pago,
-    List<ItemsCaixaDTO> items,
+    List<ItemsPedidoDTO> items,
     String consumo,
     Boolean showPlus,
     Boolean showObs,
@@ -17,7 +17,7 @@ public record ListagemPedidosCaixa(
         return this.idPedido;
     }
 
-    public List<ItemsCaixaDTO> getItems() {
+    public List<ItemsPedidoDTO> getItems() {
         return this.items;
     }
 

@@ -75,7 +75,7 @@ public class CaixaController {
 
             return ResponseEntity.status(200).body(new ResponseDTO(pagamentos, "", "", ""));
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(new ResponseDTO(e, "Desculpe, tente novamente mais tarde!", "",""));
+            return ResponseEntity.status(500).body(new ResponseDTO(e.getMessage(), "Desculpe, tente novamente mais tarde!", "",""));
         }
     }
 }

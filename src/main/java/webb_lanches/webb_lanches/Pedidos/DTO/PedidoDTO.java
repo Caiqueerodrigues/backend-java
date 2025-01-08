@@ -11,7 +11,7 @@ public record PedidoDTO(
 
     String nomeCliente,
 
-    // String nomeproduto,
+    String nomeProduto,
     
     String status,
     

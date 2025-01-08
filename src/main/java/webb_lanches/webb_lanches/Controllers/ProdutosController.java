@@ -90,7 +90,7 @@ public class ProdutosController {
                     return ResponseEntity.status(200).body(response);
                 }
             } else {
-                var item = produtoRepository.findByidProduto(id);
+                var item = produtoRepository.findByIdProduto(id);
     
                 if(item != null) {
                     var response = new ResponseDTO(item, "", "", "");
