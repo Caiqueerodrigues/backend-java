@@ -17,6 +17,7 @@ import webb_lanches.webb_lanches.Produtos.Adicional;
 import webb_lanches.webb_lanches.Produtos.Produto;
 import webb_lanches.webb_lanches.Produtos.ProdutosRepository;
 import webb_lanches.webb_lanches.Pedidos.DTO.CriarPedidoDTO;
+import webb_lanches.webb_lanches.Pedidos.DTO.DadosEdicaoPedidoDTO;
 import webb_lanches.webb_lanches.Pedidos.DTO.DadosListagemPedidoId;
 import webb_lanches.webb_lanches.Pedidos.DTO.DeletarPedidotDTO;
 import webb_lanches.webb_lanches.Pedidos.DTO.ItemsListagemPedidoId;
@@ -226,7 +227,7 @@ public class PedidosController {
     }
 
     @PutMapping("/alterar-pedido")
-    public ResponseEntity<ResponseDTO> putPedido( @RequestBody @Valid DadosListagemPedidoId dados) {
+    public ResponseEntity<ResponseDTO> putPedido( @RequestBody @Valid DadosEdicaoPedidoDTO dados) {
         try {
             return ResponseEntity.status(200).body(new ResponseDTO("", "", "",""));
         } catch (Exception e) {

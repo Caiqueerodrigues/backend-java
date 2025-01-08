@@ -11,7 +11,7 @@ public record DadosEdicaoPedidoDTO(
     @NotBlank
     String idPedido,
     
-    
+    List<ItemsEdicaoPedidoId> items,
     String nomeCliente,
     String pago,
     String retirada,
