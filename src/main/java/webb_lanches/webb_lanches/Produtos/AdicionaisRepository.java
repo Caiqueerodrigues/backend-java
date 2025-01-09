@@ -9,4 +9,5 @@ public interface AdicionaisRepository extends JpaRepository<Adicional, Long> {
     Adicional findByIdAdicional(Long id);
 
     List<Adicional> findAll(); 
+    List<Adicional> findByStatus(Boolean ativo);
 }

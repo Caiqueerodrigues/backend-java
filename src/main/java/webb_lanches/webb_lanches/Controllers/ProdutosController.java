@@ -18,7 +18,11 @@ import webb_lanches.webb_lanches.Produtos.Produto;
 import webb_lanches.webb_lanches.Produtos.ProdutosRepository;
 import webb_lanches.webb_lanches.Produtos.DTO.AlterarProduto;
 import webb_lanches.webb_lanches.Produtos.DTO.CadastrarProduto;
+import webb_lanches.webb_lanches.Produtos.DTO.ListagemAdicionaisMenu;
+import webb_lanches.webb_lanches.Produtos.DTO.ListagemCompletaMenu;
 import webb_lanches.webb_lanches.Produtos.DTO.ListagemGeralEstoque;
+import webb_lanches.webb_lanches.Produtos.DTO.ListagemProdutosMenu;
+import webb_lanches.webb_lanches.Produtos.DTO.ProdutoDTO;
 import webb_lanches.webb_lanches.Produtos.ENUM.TipoProduto;
 
 import org.springframework.web.bind.annotation.PostMapping;
@@ -167,4 +171,60 @@ public class ProdutosController {
         
     }
     
+    @GetMapping("/produtos-menu")
+    public ResponseEntity<ResponseDTO> getProdutosMenu() {
+        try {
+            List<Adicional> adicionais = adicionalRepository.findByStatus(true);
+            List<Produto> produtos = produtoRepository.findByAtivo(true);
+
+            List<ListagemProdutosMenu> listaProdutos = new ArrayList<>();
+            if(produtos != null && produtos.size() > 0) {
+                produtos.forEach(prod -> {
+                    ProdutoDTO produto = new ProdutoDTO(
+                        prod.getIdProduto(), 
+                        prod.getNomeProduto(), 
+                        prod.getPrecoProduto(), 
+                        prod.getDescricao(), 
+                        prod.getAdicional()
+                    );
+
+                    listaProdutos.stream()
+                        .filter(categoria -> categoria.categoria().equals(prod.getCategoria()))
+                        .findFirst()
+                        .ifPresentOrElse(
+                            categoria -> categoria.items().add(produto),  // Adiciona o produto à lista da categoria existente
+                            () -> { // Cria uma nova categoria caso não exista
+                                List<ProdutoDTO> listaTemp = new ArrayList<>();
+                                listaTemp.add(produto);
+                                listaProdutos.add(new ListagemProdutosMenu(prod.getCategoria(), listaTemp));
+                            }
+                        );
+                });
+
+            } 
+
+            List<ListagemAdicionaisMenu> listaAdicionais = new ArrayList<>();
+            if(adicionais != null && adicionais.size() > 0) {
+
+                adicionais.forEach(add -> {
+                    ListagemAdicionaisMenu adicional = new ListagemAdicionaisMenu(
+                        add.getIdAdicional(), 
+                        add.getNome(), 
+                        add.getPreco(), 
+                        add.getStatus(), 
+                        String.format("%.2f", add.getPreco())
+                    );
+
+                    listaAdicionais.add(adicional);
+                });
+            }
+
+            ListagemCompletaMenu listaFinal = new ListagemCompletaMenu(listaProdutos, listaAdicionais);
+
+
+            return ResponseEntity.status(200).body(new ResponseDTO(listaFinal, "", "", ""));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(new ResponseDTO("", "Desculpe, tente novamente mais tarde!", "", ""));
+        }
+    }
 }
