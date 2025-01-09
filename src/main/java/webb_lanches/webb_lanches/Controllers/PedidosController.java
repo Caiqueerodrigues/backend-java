@@ -10,6 +10,7 @@ import webb_lanches.webb_lanches.Caixa.DTO.ListagemPagamentos;
 import webb_lanches.webb_lanches.Commons.DTO.DateDTO;
 import webb_lanches.webb_lanches.Commons.DTO.ResponseDTO;
 import webb_lanches.webb_lanches.Commons.Services.ObterDataHoraBrasilia;
+import webb_lanches.webb_lanches.Exceptions.InsufficientQuantityException;
 import webb_lanches.webb_lanches.Pedidos.Pedido;
 import webb_lanches.webb_lanches.Pedidos.PedidosRepository;
 import webb_lanches.webb_lanches.Pedidos.DTO.PedidoDTO;
@@ -20,6 +21,7 @@ import webb_lanches.webb_lanches.Pedidos.DTO.CriarPedidoDTO;
 import webb_lanches.webb_lanches.Pedidos.DTO.DadosEdicaoPedidoDTO;
 import webb_lanches.webb_lanches.Pedidos.DTO.DadosListagemPedidoId;
 import webb_lanches.webb_lanches.Pedidos.DTO.DeletarPedidotDTO;
+import webb_lanches.webb_lanches.Pedidos.DTO.ItemsEdicaoPedidoId;
 import webb_lanches.webb_lanches.Pedidos.DTO.ItemsListagemPedidoId;
 import webb_lanches.webb_lanches.Pedidos.DTO.ItemsPedidoDTO;
 import webb_lanches.webb_lanches.Pedidos.DTO.ItemsPedidoNovoDTO;
@@ -123,12 +125,15 @@ public class PedidosController {
     @Transactional
     public ResponseEntity<ResponseDTO> newPedido(@RequestBody @Valid CriarPedidoDTO dados) {
         try {
-            String idPedido = (dados.nomeCliente() != null) ? 
+            String idPedido = (dados.nomeCliente() != null && !dados.nomeCliente().isBlank()) ? 
                 dados.nomeCliente() + "." + dataHoraBrasilia.dataHoraBrasilia() : 
                 dataHoraBrasilia.dataHoraBrasilia();
                 
+                List<Pedido> novosPedidos = new ArrayList<>();
+
                 for (ItemsPedidoNovoDTO item : dados.items()) {
                     Produto consult = produtosRepository.findByIdProduto((Long) item.idProduto());
+
                 
                     if (consult != null && consult.getQtdProduto() - 1 >= 0) {
                         Pedido novoPedido = new Pedido();
@@ -143,15 +148,17 @@ public class PedidosController {
                             novoPedido.setIdAdicional(item.idAdicional());
                             novoPedido.setRetirada(item.retirada());
                 
-                        repository.save(novoPedido);
+                            novosPedidos.add(novoPedido);
                     } else {
-                        ResponseEntity<ResponseDTO> response = ResponseEntity.status(400).body(new ResponseDTO("", "Quantidade de " + consult.getNomeProduto() + " insuficiente!", "", ""));
-                        return response; // Sai do método ao encontrar o erro
+                        throw new InsufficientQuantityException("Quantidade de " + consult.getNomeProduto() + " insuficiente!");
                     }
                 }
-            
+
+                novosPedidos.forEach(pedido -> repository.save(pedido));
 
             return ResponseEntity.status(200).body(new ResponseDTO("", "", "Pedido Criado com sucesso!",""));
+        } catch (InsufficientQuantityException e) {
+            return ResponseEntity.status(400).body(new ResponseDTO("", e.getMessage(), "", ""));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(new ResponseDTO(e.getMessage(), "Desculpe, tente novamente mais tarde!", "",""));
         }
@@ -227,9 +234,87 @@ public class PedidosController {
     }
 
     @PutMapping("/alterar-pedido")
+    @Transactional
     public ResponseEntity<ResponseDTO> putPedido( @RequestBody @Valid DadosEdicaoPedidoDTO dados) {
         try {
-            return ResponseEntity.status(200).body(new ResponseDTO("", "", "",""));
+
+            List<Pedido> pedido = repository.findByIdPedido(dados.idPedido());
+            
+            if(pedido != null && pedido.size() > 0) {
+                if(dados.deletados() != null && dados.deletados().size() > 0) {
+                    dados.deletados().forEach(idDeletado -> {
+                        long idDeletadoLong = (long) idDeletado;
+    
+                        repository.deleteById(idDeletadoLong);
+                    });
+                }
+    
+                final String novoIdPedido;
+                if((dados.nomeCliente() == null || dados.nomeCliente().isBlank()) && dados.idPedido().contains(".")) {
+                    novoIdPedido = (dados.idPedido().split("\\.")[0] != null) ? 
+                    dados.idPedido().split("\\.")[1].toString() : dados.idPedido().split("\\.")[0];                
+                } else if(dados.nomeCliente() != null && !dados.nomeCliente().isBlank() && !dados.idPedido().contains(dados.nomeCliente())) {
+                    System.out.println(dados.idPedido().contains("."));
+                    novoIdPedido = (dados.idPedido().contains(".")) ?
+                        dados.nomeCliente().toLowerCase() + "." + dados.idPedido().split("\\.")[1] : 
+                        dados.nomeCliente().toLowerCase() + "." + dados.idPedido();
+                } else novoIdPedido = null;
+    
+                List<Pedido> novosPedidos = new ArrayList<>();
+    
+                for(ItemsEdicaoPedidoId item: dados.items()) {
+                    if(item.id() == null) {
+                        Produto produtoConsult = produtosRepository.findByIdProduto(item.idProduto());
+    
+                        if(produtoConsult.getQtdProduto() - item.quantidade() >= 0) {
+                            Pedido novoItem = new Pedido(
+                                (novoIdPedido != null) ? novoIdPedido : dados.idPedido(),
+                                item.obs(),
+                                item.preco(),
+                                item.quantidade(),
+                                item.status(),
+                                item.total(),
+                                item.pago(),
+                                item.idProduto(),
+                                item.idAdicional(),
+                                item.retirada()
+                            );
+    
+                            novosPedidos.add(novoItem);
+                        } else {
+                            throw new InsufficientQuantityException("Quantidade de " + produtoConsult.getNomeProduto() + " insuficiente!");
+                        }
+                    } else {
+                        Optional<Pedido> pedidoExistente = repository.findById(item.id());
+                        
+                        pedidoExistente.ifPresent(p -> {
+                            if(item.obs() != null && !item.obs().isBlank()) p.setObs(item.obs());
+                            p.setPreco(item.preco());
+                            p.setQuantidade(item.quantidade());
+                            if(item.status() != null && !item.status().isBlank()) p.setStatus(item.status());
+                            p.setTotal(item.total());
+                            p.setPago(item.pago());
+                            if(item.idAdicional() != null && !item.idAdicional().isBlank()) p.setIdAdicional(item.idAdicional());
+                            p.setRetirada(item.retirada());
+                        });
+                    }
+                }
+    
+                if (novoIdPedido != null) {
+                    pedido.forEach(ped -> {
+                        ped.setIdPedido(novoIdPedido);
+                        repository.save(ped);
+                    });
+                }
+    
+                if(novosPedidos.size() > 0) {
+                    novosPedidos.forEach(np -> repository.save(np));
+                }
+    
+                return ResponseEntity.status(200).body(new ResponseDTO("", "", "Pedido alterado com sucesso!",""));
+            } else return ResponseEntity.status(404).body(new ResponseDTO("", "Desculpe, pedido inexistente!", "",""));
+        } catch (InsufficientQuantityException e) {
+            return ResponseEntity.status(400).body(new ResponseDTO("", e.getMessage(), "", ""));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(new ResponseDTO(e.getMessage(), "Desculpe, tente novamente mais tarde!", "",""));
         }

@@ -16,6 +16,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import webb_lanches.webb_lanches.Pedidos.DTO.ItemsEdicaoPedidoId;
 import webb_lanches.webb_lanches.Pedidos.DTO.PedidoDTO;
 
 @Table(name = "pedidos")
@@ -37,10 +38,10 @@ public class Pedido {
     @Transient
     private String nomeProduto;
     
-    private Double preco;
+    private double preco;
     private int quantidade;
     private String status;
-    private Double total;
+    private double total;
     
     private String pago;
     private Long idProduto;
@@ -59,6 +60,30 @@ public class Pedido {
         if(dados.obs() != null) this.obs = dados.obs();
         if(dados.status() != null) this.status = dados.status();
         if(dados.idAdicional() != null) this.idAdicional = dados.idAdicional();
+    }
+
+    public Pedido(
+            String idPedido, 
+            String obs, 
+            double preco, 
+            int quantidade, 
+            String status, 
+            double total, 
+            String pago, 
+            Long idProduto, 
+            String idAdicional, 
+            String retirada
+        ) {
+        this.idPedido = idPedido;
+        this.preco = preco; 
+        this.quantidade = quantidade;
+        this.total = total;
+        this.pago = pago;
+        this.idProduto = idProduto;
+        this.retirada = retirada;
+        if(obs != null) this.obs = obs;
+        if(status != null) this.status = status;
+        if(idAdicional != null) this.idAdicional = idAdicional;
     }
 
     public void setIdPedido(String idPedido) {
