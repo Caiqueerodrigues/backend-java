@@ -16,9 +16,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
+import webb_lanches.webb_lanches.Caixa.DTO.DadosRelatorioPDF;
 import webb_lanches.webb_lanches.Caixa.DTO.ListagemPagamentos;
 import webb_lanches.webb_lanches.Commons.DTO.DateDTO;
 import webb_lanches.webb_lanches.Commons.DTO.ResponseDTO;
+import webb_lanches.webb_lanches.Commons.Services.RelatorioPagamentosPDF;
 import webb_lanches.webb_lanches.Pedidos.PedidosRepository;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,6 +32,9 @@ public class CaixaController {
 
     @Autowired
     private PedidosRepository pedidosRepository;
+
+    @Autowired
+    private RelatorioPagamentosPDF relatoriosService;
 
     @PostMapping
     public ResponseEntity<ResponseDTO> getPagamentos(@RequestBody @Valid DateDTO data) {
@@ -74,6 +79,17 @@ public class CaixaController {
             });
 
             return ResponseEntity.status(200).body(new ResponseDTO(pagamentos, "", "", ""));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(new ResponseDTO(e.getMessage(), "Desculpe, tente novamente mais tarde!", "",""));
+        }
+    }
+
+    @PostMapping("/gerar-relatorio")
+    public ResponseEntity<ResponseDTO> gerarRelatorio(@RequestBody @Valid DadosRelatorioPDF dados) {
+        try {
+            String pdfBase64 = relatoriosService.gerarPDF(dados);
+
+            return ResponseEntity.status(200).body(new ResponseDTO(pdfBase64, "", "",""));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(new ResponseDTO(e.getMessage(), "Desculpe, tente novamente mais tarde!", "",""));
         }
