@@ -22,12 +22,17 @@ import webb_lanches.webb_lanches.Caixa.DTO.DadosRelatorioPDF;
 import webb_lanches.webb_lanches.Caixa.DTO.ListagemPagamentos;
 import webb_lanches.webb_lanches.Caixa.Service.CaixaService;
 import webb_lanches.webb_lanches.Pedidos.Pedido;
+import webb_lanches.webb_lanches.Produtos.Produto;
+import webb_lanches.webb_lanches.Produtos.ProdutosRepository;
 
 @Service
 public class RelatorioPagamentosPDF {
     
     @Autowired
     private CaixaService caixaService;
+
+    @Autowired
+    private ProdutosRepository produtosRepository;
     
     public String gerarPDF(List<Pedido> dados, String data) throws IOException {
 
@@ -94,8 +99,9 @@ public class RelatorioPagamentosPDF {
             
             tabela.addCell(nome);
 
+            Produto produtoNome = produtosRepository.findByIdProduto(pedido.getIdProduto());
             PdfPCell item = new PdfPCell(
-                new Phrase("nome produto", new Font(Font.TIMES_ROMAN, 12)));
+                new Phrase(produtoNome.getNomeProduto(), new Font(Font.TIMES_ROMAN, 12)));
                     item.setPadding(10);
                     item.setBorderWidth(0);
                     if(cont == dados.size() - 1) item.setBorderWidthBottom(2);
