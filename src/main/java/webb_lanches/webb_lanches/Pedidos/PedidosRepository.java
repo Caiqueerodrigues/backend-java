@@ -10,6 +10,8 @@ public interface PedidosRepository extends JpaRepository<Pedido, Long> {
     // List<Pedido> findByidPedidoLike(String data);
     List<Pedido> findByIdPedidoContaining(String data);
 
+    List<Pedido> findByIdPedidoContainingAndPagoNotNull(String data);
+
     Optional<Pedido> findById(Long id);
 
     @Query(nativeQuery = true, value = "CALL todosPedidos(:data)")

@@ -10,7 +10,7 @@ public record DadosRelatorioPDF(
     String data,
 
     List<ListagemPagamentos> items,
-    @NotBlank
+    
     String total
 ) {
 
