@@ -72,19 +72,27 @@ public class PedidosController {
             List<ListagemPedidosCaixa> pedidos = new ArrayList();
 
             if(!pedidosRespository.isEmpty()) {
+                List<Produto> produtos = produtosRepository.findAll();
+
                 pedidosRespository.forEach((pedido) -> {
                     Optional<ListagemPedidosCaixa> existeOpt = pedidos
-                    .stream()
-                    .filter(item -> item.getIdPedido().equals(pedido.getIdPedido()))
-                    .findFirst();
+                        .stream()
+                        .filter(item -> item.getIdPedido().equals(pedido.getIdPedido()))
+                        .findFirst();
+                    
+                    Optional<Produto> produtoRepos = produtos.stream()
+                        .filter(item -> item.getIdProduto().equals(pedido.getIdProduto()))
+                        .findFirst();
+                    String nomeProduto = produtoRepos.map(Produto::getNomeProduto)
+                            .orElse("Produto não encontrado");
 
                     if (existeOpt.isEmpty()) {
                         String nome = (pedido.getIdPedido() != null) ? pedido.getIdPedido().split("\\.")[0] : "";
-                        Produto produtoRepos = produtosRepository.findByIdProduto(pedido.getIdProduto());
 
+                                
                         ItemsPedidoDTO itemPedido = new ItemsPedidoDTO(
                             pedido.getIdProduto(), 
-                            produtoRepos.getNomeProduto(), 
+                            nomeProduto, 
                             pedido.getPreco(), 
                             pedido.getQuantidade(), 
                             ""
@@ -106,7 +114,7 @@ public class PedidosController {
                         
                         pedidos.add(pedidoNovo);
                     } else {
-                        ItemsPedidoDTO itemPedido = new ItemsPedidoDTO(pedido.getIdProduto(), pedido.getNomeProduto(), pedido.getPreco(), pedido.getQuantidade(), "");
+                        ItemsPedidoDTO itemPedido = new ItemsPedidoDTO(pedido.getIdProduto(), nomeProduto, pedido.getPreco(), pedido.getQuantidade(), "");
 
                         existeOpt.get().getItems().add(itemPedido);
                     }
@@ -319,6 +327,7 @@ public class PedidosController {
             return ResponseEntity.status(500).body(new ResponseDTO(e.getMessage(), "Desculpe, tente novamente mais tarde!", "",""));
         }
     }
+    
     @DeleteMapping("/apagar-pedido")
     @Transactional
     public ResponseEntity<ResponseDTO> apagarPedido(@RequestBody @Valid DeletarPedidotDTO data) {

@@ -2,9 +2,11 @@ package webb_lanches.webb_lanches.Pedidos.DTO;
 
 import java.util.List;
 
+import webb_lanches.webb_lanches.Produtos.Adicional;
+
 public record ItemsEdicaoPedidoId(
     Long id,
-    List<Integer> adicionais,
+    List<Adicional> adicionais,
     String idAdicional,
     Long idProduto,
     String nomeProduto,
