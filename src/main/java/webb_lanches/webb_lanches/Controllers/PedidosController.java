@@ -115,7 +115,7 @@ public class PedidosController {
                 return ResponseEntity.status(200).body(new ResponseDTO(pedidos, "", "",""));
             }
 
-            return ResponseEntity.status(500).body(new ResponseDTO("", "", "","Não existem pedidos para esta data ainda!"));
+            return ResponseEntity.status(400).body(new ResponseDTO("", "", "","Não existem pedidos para esta data ainda!"));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(new ResponseDTO(e.getMessage(), "Desculpe, tente novamente mais tarde!", "",""));
         }
