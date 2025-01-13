@@ -18,6 +18,7 @@ import webb_lanches.webb_lanches.Produtos.Produto;
 import webb_lanches.webb_lanches.Produtos.ProdutosRepository;
 import webb_lanches.webb_lanches.Produtos.DTO.AlterarProduto;
 import webb_lanches.webb_lanches.Produtos.DTO.CadastrarProduto;
+import webb_lanches.webb_lanches.Produtos.DTO.EditarAdiconalDTO;
 import webb_lanches.webb_lanches.Produtos.DTO.ListagemAdicionaisMenu;
 import webb_lanches.webb_lanches.Produtos.DTO.ListagemCompletaMenu;
 import webb_lanches.webb_lanches.Produtos.DTO.ListagemGeralEstoque;
@@ -88,9 +89,11 @@ public class ProdutosController {
         try {
             if(tipo == TipoProduto.adicional) {
                 var item = adicionalRepository.findByIdAdicional(id);
+
+                EditarAdiconalDTO itemFormatado = new EditarAdiconalDTO(item.getNome(), item.getPreco(), "Adicional", item.getStatus());
     
                 if(item != null) {
-                    var response = new ResponseDTO(item, "", "", "");
+                    var response = new ResponseDTO(itemFormatado, "", "", "");
                     return ResponseEntity.status(200).body(response);
                 }
             } else {
