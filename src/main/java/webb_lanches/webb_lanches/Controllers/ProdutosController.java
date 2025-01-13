@@ -86,7 +86,7 @@ public class ProdutosController {
     @GetMapping("/{tipo}/{id}")
     public ResponseEntity<ResponseDTO> getProdutoAdicional(@PathVariable TipoProduto tipo, @PathVariable Long id) {
         try {
-            if(tipo == TipoProduto.Adicionais) {
+            if(tipo == TipoProduto.adicional) {
                 var item = adicionalRepository.findByIdAdicional(id);
     
                 if(item != null) {
