@@ -2,6 +2,8 @@ package webb_lanches.webb_lanches.Pedidos.DTO;
 
 import java.util.List;
 
+import webb_lanches.webb_lanches.Produtos.Adicional;
+
 public record ItemsListagemPedidoId(
     
     String obs,
@@ -15,7 +17,7 @@ public record ItemsListagemPedidoId(
     String nomeProduto,
     String retirada,
     List<Long> id,
-    List<String> adicionais
+    List<Adicional> adicionais
 ) {
 
 }

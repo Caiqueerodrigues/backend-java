@@ -188,17 +188,17 @@ public class PedidosController {
                 List<Long> idsPedidosAgrupados = new ArrayList<>();
 
                 pedido.forEach((item) -> {
-                    List<String> adicionaisItem = new ArrayList<>();
+                    List<Adicional> adicionaisItem = new ArrayList<>();
 
                     if(item.getIdAdicional() != null && !item.getIdAdicional().isBlank()) {
                         List<String> ids = Arrays.asList(item.getIdAdicional().split(", "));
 
                         ids.forEach(idAdd -> {
                             Long idLong = Long.parseLong(idAdd);
-                                adicionais.stream()
-                                    .filter(adicional -> adicional.getIdAdicional() == idLong)  // Filtrar pelo id
-                                    .findFirst()
-                                    .ifPresent(adicional -> adicionaisItem.add(adicional.getNome()));  // Adicionar o nome à lista
+                            adicionais.stream()
+                                .filter(adicional -> adicional.getIdAdicional() == idLong)  // Filtrar pelo id
+                                .findFirst()
+                                .ifPresent(adicional -> adicionaisItem.add(adicional));  // Adicionar o nome à lista
                         });
                     }
 
