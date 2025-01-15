@@ -83,7 +83,8 @@ public class RelatorioPagamentosPDF {
         };
 
         Integer cont = 0;
-        
+        List<Produto> listaProdutos = produtosRepository.findAll();
+
         for (Pedido pedido : dados) {
             PdfPCell nome = new PdfPCell(
                 new Phrase(
@@ -99,9 +100,14 @@ public class RelatorioPagamentosPDF {
             
             tabela.addCell(nome);
 
-            Produto produtoNome = produtosRepository.findByIdProduto(pedido.getIdProduto());
+            Optional<Produto> produtoNome = listaProdutos.stream()
+                .filter(item -> item.getIdProduto().equals(pedido.getIdProduto()))
+                .findFirst();
+            String nomeProduto = produtoNome.map(Produto::getNomeProduto)
+                .orElse("Produto não encontrado");
+
             PdfPCell item = new PdfPCell(
-                new Phrase(produtoNome.getNomeProduto(), new Font(Font.TIMES_ROMAN, 12)));
+                new Phrase(nomeProduto, new Font(Font.TIMES_ROMAN, 12)));
                     item.setPadding(10);
                     item.setBorderWidth(0);
                     if(cont == dados.size() - 1) item.setBorderWidthBottom(2);
