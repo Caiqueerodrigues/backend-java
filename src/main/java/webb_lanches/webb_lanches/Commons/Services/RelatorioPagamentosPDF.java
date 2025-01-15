@@ -86,93 +86,33 @@ public class RelatorioPagamentosPDF {
         List<Produto> listaProdutos = produtosRepository.findAll();
 
         for (Pedido pedido : dados) {
-            PdfPCell nome = new PdfPCell(
-                new Phrase(
-                    pedido.getIdPedido().contains(".") ? pedido.getIdPedido().split("\\.")[0] : "", 
-                    new Font(Font.TIMES_ROMAN, 12)
-                    ));
-                    nome.setPadding(10);
-                    nome.setBorderWidth(0);
-                    nome.setBorderWidthLeft(2);
-                    if(cont == dados.size() - 1) nome.setBorderWidthBottom(2);
-                    nome.setHorizontalAlignment(Element.ALIGN_CENTER);
-                    nome.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            boolean isLastRow = cont == dados.size() - 1;
             
-            tabela.addCell(nome);
-
+            tabela.addCell(createCell(pedido.getIdPedido().contains(".") ? pedido.getIdPedido().split("\\.")[0] : "", isLastRow, 2, 0));
+            
             Optional<Produto> produtoNome = listaProdutos.stream()
                 .filter(item -> item.getIdProduto().equals(pedido.getIdProduto()))
                 .findFirst();
-            String nomeProduto = produtoNome.map(Produto::getNomeProduto)
-                .orElse("Produto não encontrado");
-
-            PdfPCell item = new PdfPCell(
-                new Phrase(nomeProduto, new Font(Font.TIMES_ROMAN, 12)));
-                    item.setPadding(10);
-                    item.setBorderWidth(0);
-                    if(cont == dados.size() - 1) item.setBorderWidthBottom(2);
-                    item.setHorizontalAlignment(Element.ALIGN_CENTER);
-                    item.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            String nomeProduto = produtoNome.map(Produto::getNomeProduto).orElse("Produto não encontrado");
+            tabela.addCell(createCell(nomeProduto, isLastRow, 0, 0));
             
-            tabela.addCell(item);
-
-            PdfPCell qtd = new PdfPCell(
-                new Phrase(String.valueOf(pedido.getQuantidade()), new Font(Font.TIMES_ROMAN, 12)));
-                    qtd.setPadding(10);
-                    qtd.setBorderWidth(0);
-                    if(cont == dados.size() - 1) qtd.setBorderWidthBottom(2);
-                    qtd.setHorizontalAlignment(Element.ALIGN_CENTER);
-                    qtd.setVerticalAlignment(Element.ALIGN_MIDDLE);
-            
-            tabela.addCell(qtd);
-
-            String precoTipoPagamento = !pedido.getPago().equalsIgnoreCase("Fiado") && !pedido.getPago().equalsIgnoreCase("A receber") ? 
-                "R$ " + String.format("%.2f", pedido.getPreco()) : 
-                "R$ - " + String.format("%.2f", pedido.getPreco());
-            PdfPCell preco = new PdfPCell(
-                new Phrase(precoTipoPagamento, new Font(Font.TIMES_ROMAN, 12)));
-                    preco.setPadding(10);
-                    preco.setBorderWidth(0);
-                    if(cont == dados.size() - 1) preco.setBorderWidthBottom(2);
-                    preco.setHorizontalAlignment(Element.ALIGN_CENTER);
-                    preco.setVerticalAlignment(Element.ALIGN_MIDDLE);
-            
-            tabela.addCell(preco);
-
-            PdfPCell pgto = new PdfPCell(
-                new Phrase(pedido.getPago(), new Font(Font.TIMES_ROMAN, 12)));
-                    pgto.setPadding(10);
-                    pgto.setBorderWidth(0);
-                    if(cont == dados.size() - 1) pgto.setBorderWidthBottom(2);
-                    pgto.setHorizontalAlignment(Element.ALIGN_CENTER);
-                    pgto.setVerticalAlignment(Element.ALIGN_MIDDLE);
-            
-            tabela.addCell(pgto);
-
-            PdfPCell consumo = new PdfPCell(
-                new Phrase(pedido.getRetirada(), new Font(Font.TIMES_ROMAN, 12)));
-                    consumo.setPadding(10);
-                    consumo.setBorderWidth(0);
-                    if(cont == dados.size() - 1) consumo.setBorderWidthBottom(2);
-                    consumo.setHorizontalAlignment(Element.ALIGN_CENTER);
-                    consumo.setVerticalAlignment(Element.ALIGN_MIDDLE);
-            
-            tabela.addCell(consumo);
-
+            tabela.addCell(createCell(String.valueOf(pedido.getQuantidade()), isLastRow, 0, 0));
+        
+            String precoTipoPagamento = !pedido.getPago().equalsIgnoreCase("Fiado") && !pedido.getPago().equalsIgnoreCase("A receber") ?
+                    "R$ " + String.format("%.2f", pedido.getPreco()) :
+                    "R$ - " + String.format("%.2f", pedido.getPreco());
+            tabela.addCell(createCell(precoTipoPagamento, isLastRow, 0, 0));
+        
+            tabela.addCell(createCell(pedido.getPago(), isLastRow, 0, 0));
+        
+            tabela.addCell(createCell(pedido.getRetirada(), isLastRow, 0, 0));
+        
             String totalText = !pedido.getPago().equalsIgnoreCase("Fiado") && !pedido.getPago().equalsIgnoreCase("A receber") ?
-                "R$ " + String.format("%.2f", (pedido.getPreco() * pedido.getQuantidade())) : 
-                "R$ - " + String.format("%.2f", (pedido.getPreco() * pedido.getQuantidade()));
-            PdfPCell total = new PdfPCell(
-                new Phrase(totalText, new Font(Font.TIMES_ROMAN, 12)));
-                    total.setPadding(10);
-                    total.setBorderWidth(0);
-                    total.setBorderWidthRight(2);
-                    if(cont == dados.size() - 1) total.setBorderWidthBottom(2);
-                    total.setHorizontalAlignment(Element.ALIGN_CENTER);
-                    total.setVerticalAlignment(Element.ALIGN_MIDDLE);
-            
-            tabela.addCell(total);
-            cont ++;
+                    "R$ " + String.format("%.2f", (pedido.getPreco() * pedido.getQuantidade())) :
+                    "R$ - " + String.format("%.2f", (pedido.getPreco() * pedido.getQuantidade()));
+            tabela.addCell(createCell(totalText, isLastRow, 0, 2));
+        
+            cont++;
         }
 
         relatorio.add(tabela);
@@ -232,5 +172,25 @@ public class RelatorioPagamentosPDF {
         listaTotais.add("Total R$ " + String.format("%.2f", total.get()));
 
         return listaTotais;
+    }
+
+    private PdfPCell createCell(String content, boolean isLastRow, int borderLeft, int borderRight) {
+        PdfPCell cell = new PdfPCell(new Phrase(content, new Font(Font.TIMES_ROMAN, 12)));
+        cell.setPadding(10);
+        cell.setBorderWidth(0);
+        
+        if (isLastRow) {
+            cell.setBorderWidthBottom(2);
+        }
+        if (borderLeft > 0) {
+            cell.setBorderWidthLeft(borderLeft);
+        }
+        if (borderRight > 0) {
+            cell.setBorderWidthRight(borderRight);
+        }
+        
+        cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        return cell;
     }
 }
